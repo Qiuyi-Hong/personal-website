@@ -1,14 +1,14 @@
 # Personal website
 
-Qiuyi Hong's personal website at qiuyihong.com: a recruiter-facing profile that re-creates the look of chanhdai.com with Qiuyi's own content and identity.
+Qiuyi Hong's personal website at qiuyihong.com: a recruiter-facing profile forked from chanhdai.com and rebuilt with Qiuyi's own content and identity.
 
 ## Language
 
 ### Sources
 
 **Reference site**:
-chanhdai.com (and its repo ncdai/chanhdai.com), whose look the new site re-creates; its code is MIT but its name, marks and likeness are not ours.
-_Avoid_: template, base, upstream
+chanhdai.com (and its repo ncdai/chanhdai.com), which the new site forks; its code is MIT but its name, marks and likeness are not ours. Its repo is the fork's upstream.
+_Avoid_: template, base
 
 **Old site**:
 The current qiuyihong.com (repo Qiuyi-Hong/personal-portfolio-website) that the new site replaces; a source of voice and project write-ups.
