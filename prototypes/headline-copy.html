@@ -1,0 +1,233 @@
+<title>Headline Copy Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Caveat:wght@500&display=swap">
+<!--
+  PROTOTYPE, throw away. Wayfinder ticket "Headline, bio and flip sentences" (#4).
+  Four copy variants for the profile header + About, switchable via #A..#D and the bottom bar.
+  Layout mimics chanhdai.com@1951e21 (profile-header.tsx, hello.tsx) so the copy is judged in place.
+-->
+<style>
+  /* Layout: one centred column with border-x rules, like the reference's screen-line grid. */
+  :root {
+    --bg: #ffffff; --fg: #0a0a0c; --muted: #5f5f68; --line: #e4e4e7;
+    --check: #fdecc8; --check-fg: #7a4a00; --bar: #0a0a0c; --bar-fg: #fafafa;
+    --sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --hand: "Caveat", "Segoe Print", cursive;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #0a0a0c; --fg: #fafafa; --muted: #a1a1aa; --line: #27272a;
+    --check: #4a3410; --check-fg: #ffd58a; --bar: #fafafa; --bar-fg: #0a0a0c; color-scheme: dark } }
+  :root[data-theme="dark"] {
+    --bg: #0a0a0c; --fg: #fafafa; --muted: #a1a1aa; --line: #27272a;
+    --check: #4a3410; --check-fg: #ffd58a; --bar: #fafafa; --bar-fg: #0a0a0c; color-scheme: dark }
+
+  body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 24px 120px; }
+  .col { max-width: 46rem; margin: 0 auto; border-inline: 1px solid var(--line); }
+  .row { border-top: 1px solid var(--line); padding: 12px 16px; min-width: 0; }
+  .row:last-child { border-bottom: 1px solid var(--line); }
+  .stripe { height: 32px; border-top: 1px solid var(--line);
+    background: repeating-linear-gradient(-45deg, var(--line) 0 1px, transparent 1px 8px); }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+  .proto-note { max-width: 46rem; margin: 0 auto 16px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+  .header { display: grid; grid-template-columns: auto 1fr; align-items: end; border-top: 1px solid var(--line); }
+  .avatar { width: 120px; height: 120px; margin: 4px; border-radius: 50%; display: grid; place-items: center;
+    border: 1px solid var(--line); font-family: var(--mono); color: var(--muted); font-size: 13px; }
+  .who { border-left: 1px solid var(--line); min-width: 0; }
+  .name { display: flex; align-items: center; gap: 8px; padding: 8px 16px 6px; }
+  .name h1 { margin: 0; font-size: 2rem; line-height: 1; font-weight: 500; letter-spacing: -.02em; text-wrap: balance; }
+  .name svg { width: 18px; height: 18px; flex: none; }
+  .flip { border-top: 1px solid var(--line); padding: 6px 16px; min-height: 2.25rem;
+    font-family: var(--mono); font-size: 13.5px; color: var(--muted); }
+  .flip span { display: inline-block; transition: opacity .25s, transform .25s; }
+  .flip span.out { opacity: 0; transform: translateY(-4px); }
+  .flip-list { margin: 4px 0 0; padding: 0; list-style: none; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .flip-list li::before { content: "↻ "; }
+
+  .ov { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 14px; }
+  .ov b { font-weight: 500; }
+  .greet { font-family: var(--hand); font-size: 28px; line-height: 1; }
+  .about ul { margin: 8px 0 0; padding-left: 18px; max-width: 65ch; }
+  .about li + li { margin-top: 6px; }
+  .about p { margin: 8px 0 0; max-width: 65ch; }
+  .wid { display: grid; gap: 10px; margin-top: 8px; }
+  .wid div { display: grid; grid-template-columns: 11rem 1fr; gap: 12px; }
+  .wid b { font-weight: 500; }
+  @media (max-width: 520px) { .wid div { grid-template-columns: 1fr; gap: 0; } .avatar { width: 88px; height: 88px; } .name h1 { font-size: 1.6rem; } }
+
+  mark.check { background: var(--check); color: var(--check-fg); border-radius: 3px; padding: 0 2px; cursor: help; }
+
+  .serp { font-family: var(--sans); }
+  .serp .t { font-size: 17px; color: var(--fg); font-weight: 500; }
+  .serp .u { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .serp .d { font-size: 14px; color: var(--muted); max-width: 60ch; }
+
+  .notes { font-size: 14px; }
+  .notes ol { margin: 8px 0 0; padding-left: 20px; max-width: 70ch; }
+  .notes li + li { margin-top: 8px; }
+
+  .bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; max-width: calc(100vw - 32px);
+    background: var(--bar); color: var(--bar-fg); border-radius: 999px; padding: 6px 8px;
+    box-shadow: 0 6px 24px rgb(0 0 0 / .25); font-family: var(--mono); font-size: 12px; }
+  .bar button { font: inherit; color: inherit; background: transparent; border: 1px solid color-mix(in oklab, var(--bar-fg) 30%, transparent);
+    border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+  .bar button[aria-pressed="true"] { background: var(--bar-fg); color: var(--bar); }
+  .bar button:focus-visible { outline: 2px solid var(--bar-fg); outline-offset: 2px; }
+  .bar .lbl { padding: 0 6px; white-space: nowrap; }
+  @media (prefers-reduced-motion: reduce) { .flip span { transition: none; } }
+</style>
+
+<p class="proto-note">Prototype for the "Headline, bio and flip sentences" ticket. Use ← → (or the bar) to switch copy. <mark class="check">Highlighted</mark> phrases are claims Qiuyi needs to confirm; hover them for the reason.</p>
+
+<main class="col">
+  <div class="header">
+    <div class="avatar" aria-hidden="true">avatar</div>
+    <div class="who">
+      <div class="name">
+        <h1 id="name">Qiuyi Hong</h1>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1.5l2.6 2.1 3.3-.4.9 3.2 2.9 1.7-1.2 3.1 1.2 3.1-2.9 1.7-.9 3.2-3.3-.4L12 22.5l-2.6-2.1-3.3.4-.9-3.2-2.9-1.7L3.5 12 2.3 8.9l2.9-1.7.9-3.2 3.3.4z"/><path fill="var(--bg)" d="M10.6 15.6l-3.2-3.2 1.4-1.4 1.8 1.8 4.6-4.6 1.4 1.4z"/></svg>
+      </div>
+      <div class="flip" aria-live="polite"><span id="flip"></span></div>
+    </div>
+  </div>
+  <div class="row"><div class="eyebrow">All flip sentences (first one is also the bio / meta description)</div><ul class="flip-list" id="flipList"></ul></div>
+  <div class="stripe"></div>
+  <div class="row ov" id="ov"></div>
+  <div class="stripe"></div>
+  <section class="row about">
+    <div class="greet">Good afternoon</div>
+    <h2 class="eyebrow" style="margin:6px 0 0">About</h2>
+    <div id="about"></div>
+  </section>
+  <section class="row about" id="widRow" hidden>
+    <h2 class="eyebrow" style="margin:0">What I do</h2>
+    <div class="wid">
+      <div><b>AI engineering</b><span>LLM applications, agents and retrieval, with LangChain and LangGraph.</span></div>
+      <div><b>Data pipelines</b><span>Extracting messy data from PDFs and APIs into clean SQL tables.</span></div>
+      <div><b>Forecasting &amp; optimisation</b><span>Time-series models in PyTorch, MILP and metaheuristics for energy problems.</span></div>
+    </div>
+  </section>
+  <div class="stripe"></div>
+  <section class="row">
+    <div class="eyebrow">How a recruiter first sees it: Google / LinkedIn link preview</div>
+    <div class="serp" style="margin-top:6px">
+      <div class="u">www.qiuyihong.com</div>
+      <div class="t" id="serpT"></div>
+      <div class="d" id="serpD"></div>
+    </div>
+  </section>
+  <section class="row notes">
+    <div class="eyebrow" id="notesHead">About this variant</div>
+    <p id="why" style="margin:6px 0 0;max-width:70ch"></p>
+  </section>
+  <section class="row notes">
+    <div class="eyebrow">Decisions for Qiuyi</div>
+    <ol>
+      <li><b>Pick a variant</b>, or mix lines across them (e.g. "flip sentences from C, About from B").</li>
+      <li><b>Name line:</b> "Qiuyi Hong" or just "Qiuyi" (the reference shows first name only). Recommendation: full name, since recruiters search it. Toggle it in the bar.</li>
+      <li><b>Hyperlayer:</b> Experience only records AI Friday and its website. What do you actually build there? Every highlighted Hyperlayer claim depends on this.</li>
+      <li><b>Personal flip line:</b> the reference ends on a human fact ("I own a vintage iPhone."). Give one, or drop it (C has none).</li>
+      <li><b>"What I do":</b> it isn't in the v1 sections. Recommendation: drop it; the About bullets already cover it. Toggle it to see.</li>
+      <li><b>Title wording:</b> headline and meta say "AI Engineer"; Overview and Experience say "Junior AI Engineer", the exact Position title. OK?</li>
+      <li><b>Name pronunciation button:</b> keep the reference's speaker icon with a recording of you saying your name, or drop it.</li>
+    </ol>
+  </section>
+</main>
+
+<nav class="bar" aria-label="Prototype controls">
+  <button id="prev" aria-label="Previous variant">←</button>
+  <span class="lbl" id="lbl"></span>
+  <button id="next" aria-label="Next variant">→</button>
+  <button id="nameBtn" aria-pressed="false">first name only</button>
+  <button id="widBtn" aria-pressed="false">"What I do"</button>
+</nav>
+
+<script>
+const C = (text, why) => `<mark class="check" title="${why}">${text}</mark>`;
+const HL = "Experience only records AI Friday at Hyperlayer. Confirm what you build there.";
+const PERSONAL = C("[one line about you outside work]", "Placeholder: Qiuyi supplies a personal fact, or the line is dropped.");
+const JOB = `<span class="eyebrow">Job</span> <span><b>Junior AI Engineer</b> @ Hyperlayer</span>`;
+const LOC = `<span class="eyebrow">Location</span> <span>London, United Kingdom</span>`;
+
+const V = {
+  A: {
+    name: "LinkedIn today",
+    flip: ["AI Engineer | PhD in Data Science"],
+    about: `<p>I'm an AI Engineer with a PhD in Data Science and a passion for developing AI-powered applications that solve real-world problems. With experience across academia and industry, I specialise in AI engineering, software development, machine learning, data science, and optimisation. I combine rigorous research with hands-on engineering to deliver impactful, scalable solutions.</p>`,
+    why: "Baseline: the LinkedIn headline and About, ported as they are. The old site used the same paragraph. It is accurate but generic: no employer, no city, nothing a recruiter can't read on any other AI engineer's profile, and one paragraph where the reference uses three scannable bullets.",
+  },
+  B: {
+    name: "Builder",
+    flip: ["I build AI products with LLMs and agents.", "AI Engineer at Hyperlayer, London.", "PhD in Data Science.", PERSONAL],
+    about: `<ul>
+      <li>I'm Qiuyi, an AI Engineer at Hyperlayer in London. ${C("I build LLM and agent-based applications", HL)}, and I started AI Friday, our internal series on applied AI.</li>
+      <li>Before that I was a Data Scientist at heatly. I built an LLM-driven pipeline that pulls data out of PDFs and charts, and a Node.js app that compares heat pump and gas boiler running costs for customers.</li>
+      <li>I work mostly in Python and TypeScript, with LangChain, LangGraph, PyTorch, FastAPI and Node.js.</li>
+    </ul>`,
+    why: "Leads with what you ship now. The PhD is a credential in the third flip line, not the headline. Best if you are applying for product-facing AI engineering roles. Weakest on the research story, which only shows up in Publications.",
+  },
+  C: {
+    name: "Research to production",
+    flip: ["Research methods, shipped as working software.", "AI Engineer with a PhD in Data Science.", "First author on 7 papers in energy and ML.", PERSONAL],
+    about: `<ul>
+      <li>I'm Qiuyi, an AI Engineer with a PhD in Data Science. I take methods from research and turn them into software people use.</li>
+      <li>My research covered forecasting, optimisation and energy markets: seven first-author papers, including Applied Energy and a Transformer model for long-term energy load forecasting.</li>
+      <li>Since leaving academia I've built LLM data pipelines at heatly, and I now ${C("work on applied AI", HL)} at Hyperlayer in London.</li>
+    </ul>`,
+    why: "Makes the PhD-to-industry move the story. It suits roles that value depth: ML engineer, applied scientist, energy or climate tech. The risk is that a recruiter reads \"research\" first and files you as academic. The bio line does the most work here.",
+  },
+  D: {
+    name: "Fact sheet",
+    flip: ["AI Engineer in London.", "LLMs, agents, data pipelines.", "PhD in Data Science, University of Essex.", "Python · TypeScript · PyTorch · LangGraph"],
+    about: `<ul>
+      <li>AI Engineer at Hyperlayer, London. ${C("Building LLM applications", HL)}; created and host AI Friday, an internal series on applied AI.</li>
+      <li>Previously Data Scientist at heatly (LLM-based ETL, a customer-facing Node.js app) and Postdoctoral Research Associate in Net Zero at Newcastle University.</li>
+      <li>PhD in Data Science (Essex, 2024). Seven first-author publications in energy systems and machine learning.</li>
+    </ul>`,
+    why: "No adjectives, no first person: every line is a searchable fact, in the same CV voice as the Experience entries. Fastest to scan in 10 seconds, and keyword-rich for search. It gives up personality, so there is no personal flip line.",
+  },
+};
+const keys = Object.keys(V);
+let cur = keys.includes(location.hash.slice(1)) ? location.hash.slice(1) : "A";
+let firstOnly = false, flipTimer, flipIdx = 0;
+const $ = id => document.getElementById(id);
+const plain = s => s.replace(/<[^>]+>/g, "");
+
+function render() {
+  const v = V[cur];
+  const full = firstOnly ? "Qiuyi" : "Qiuyi Hong";
+  $("name").textContent = full;
+  $("lbl").textContent = `${cur} · ${v.name}`;
+  $("flipList").innerHTML = v.flip.map(f => `<li>${f}</li>`).join("");
+  $("ov").innerHTML = `<div>${JOB}</div><div>${LOC}</div>`;
+  $("about").innerHTML = v.about;
+  $("serpT").textContent = `Qiuyi Hong · AI Engineer`;
+  $("serpD").textContent = plain(v.flip[0]);
+  $("notesHead").textContent = `About variant ${cur}: ${v.name}`;
+  $("why").textContent = v.why;
+  history.replaceState(null, "", "#" + cur);
+  clearInterval(flipTimer); flipIdx = 0; $("flip").innerHTML = v.flip[0];
+  if (v.flip.length > 1) flipTimer = setInterval(() => {
+    const el = $("flip"); el.classList.add("out");
+    setTimeout(() => { flipIdx = (flipIdx + 1) % v.flip.length; el.innerHTML = v.flip[flipIdx]; el.classList.remove("out"); }, 250);
+  }, 3000);
+}
+const go = d => { cur = keys[(keys.indexOf(cur) + d + keys.length) % keys.length]; render(); };
+$("prev").onclick = () => go(-1);
+$("next").onclick = () => go(1);
+$("nameBtn").onclick = e => { firstOnly = !firstOnly; e.currentTarget.setAttribute("aria-pressed", firstOnly); render(); };
+$("widBtn").onclick = e => { const on = $("widRow").hidden; $("widRow").hidden = !on; e.currentTarget.setAttribute("aria-pressed", on); };
+addEventListener("keydown", e => {
+  if (e.target.closest("input, textarea, [contenteditable]")) return;
+  if (e.key === "ArrowLeft") go(-1);
+  if (e.key === "ArrowRight") go(1);
+});
+const h = new Date().getHours();
+document.querySelector(".greet").textContent = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+render();
+</script>
