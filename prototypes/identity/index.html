@@ -57,8 +57,8 @@
 .v-a { --brand: var(--foreground); --display: var(--font-serif); --display-weight: 500; }
 .v-b { --brand: var(--amber); --display: var(--font-sans); --display-weight: 500; }
 .v-c { --brand: var(--ink); --display: var(--font-sans); --display-weight: 500; }
-.v-d { --brand: var(--amber); --display: var(--font-sans); --display-weight: 500; }
-.v-d .tag { color: var(--foreground); } /* amber text on white fails contrast; amber stays in border and fill */
+.v-d, .v-e, .v-f { --brand: var(--amber); --display: var(--font-sans); --display-weight: 500; }
+.v-d .tag, .v-e .tag, .v-f .tag { color: var(--foreground); } /* amber text on white fails contrast; amber stays in border and fill */
 
 * { box-sizing: border-box; }
 body {
@@ -327,6 +327,34 @@ MARK.d = MARK.b; FAV.d = FAV.b; LOGOTYPE.d = LOGOTYPE.b; CAPTION.d = CAPTION.c; 
 COVER.d = () => COVER.c("var(--amber)");
 OG.d = () => OG.c("#f0a43a", `<g transform="translate(1036 60) scale(4)" fill="none" stroke="#18181b" stroke-width="2" stroke-linecap="square"><path d="${QH_PATH}"/></g>`, "#71717a");
 
+// E and F = D with the Fig. 1 cover swapped out.
+for (const k of ["e", "f"]) { MARK[k] = MARK.b; FAV[k] = FAV.b; LOGOTYPE[k] = LOGOTYPE.b; CREDIT[k] = CREDIT.c; }
+COVER.e = COVER.b; CAPTION.e = CAPTION.b; OG.e = OG.b;
+// F: construction drawing of the QH mark at 10 px per grid unit, origin (180, 20).
+COVER.f = () => {
+  const u = (n) => 10 * n, X = (n) => 180 + u(n), Y = (n) => 20 + u(n);
+  const grid = Array.from({ length: 25 }, (_, i) => `<line x1="${X(i)}" x2="${X(i)}" y1="${Y(0)}" y2="${Y(24)}"/><line x1="${X(0)}" x2="${X(24)}" y1="${Y(i)}" y2="${Y(i)}"/>`).join("");
+  const dim = (x1, y1, x2, y2, label, lx, ly) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--muted-foreground)"/><text x="${lx}" y="${ly}" text-anchor="middle" class="mono" font-size="10" fill="var(--muted-foreground)">${label}</text>`;
+  const note = (x1, y1, x2, y2, label) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--muted-foreground)" stroke-dasharray="2 2"/><text x="${x2 + 4}" y="${y2 + 3.5}" class="mono" font-size="10" fill="var(--muted-foreground)">${label}</text>`;
+  return `<svg viewBox="0 0 600 300" id="specimen" role="img" aria-label="Construction drawing of the QH mark on a 24-unit grid">
+    <g stroke="var(--line)" stroke-width="1">${grid}</g>
+    <g transform="translate(180 20) scale(10)" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="square"><path d="${QH_PATH}"/></g>
+    ${dim(X(3), Y(23), X(13), Y(23), "10", X(8), Y(23) + 14)}${dim(X(13), Y(23), X(21), Y(23), "8", X(17), Y(23) + 14)}
+    ${dim(X(0) - 14, Y(5), X(0) - 14, Y(19), "14", X(0) - 26, Y(12) + 3.5)}
+    ${note(X(13), Y(5), X(26), Y(2), "shared stem")}${note(X(15), Y(21), X(26), Y(22), "tail 45°")}${note(X(21), Y(12), X(26), Y(12), "stroke 2 / 24")}
+    <g id="xh" opacity="0"><line id="xh-v" y1="0" y2="300" stroke="var(--muted-foreground)" stroke-dasharray="3 3"/><line id="xh-h" x1="0" x2="600" stroke="var(--muted-foreground)" stroke-dasharray="3 3"/><text id="xh-t" class="mono" font-size="10" fill="var(--muted-foreground)"></text></g>
+  </svg>`;
+};
+CAPTION.f = "Drawing 1. QH on a 24-unit grid.";
+OG.f = () => `<svg viewBox="0 0 1200 630" role="img" aria-label="Open Graph card, drawing variant">
+    <defs><pattern id="gridf" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0V24H0" fill="none" stroke="#f0f0f2" stroke-width="2"/></pattern></defs>
+    <rect width="1200" height="630" fill="#ffffff"/><rect width="1200" height="630" fill="url(#gridf)"/>
+    <g transform="translate(96 150) scale(13)" fill="none" stroke="#f0a43a" stroke-width="1.6" stroke-linecap="square"><path d="${QH_PATH}"/></g>
+    <text x="520" y="300" font-family="Geist, sans-serif" font-weight="500" font-size="88" fill="#18181b">Qiuyi Hong</text>
+    <text x="524" y="362" font-family="Geist, sans-serif" font-size="34" fill="#52525b">Junior AI Engineer · London</text>
+    <text x="524" y="520" font-family="'Geist Mono', monospace" font-size="26" fill="#71717a">qiuyihong.com</text>
+  </svg>`;
+
 const VARIANTS = {
   a: {
     name: "Specimen",
@@ -375,6 +403,17 @@ const VARIANTS = {
     ],
   },
 };
+const withD = (over) => VARIANTS.d.spec.map(([t, d]) => [t, over[t] ?? d]);
+VARIANTS.e = { name: "D + grid cover", spec: withD({
+  Differences: "1. Amber accent from the old site's logo. 2. Interactive dot-grid cover that draws the mark.",
+  Cover: "B's canvas dot grid drawing QH in amber; dots swell near the cursor, a click sends a ripple. Closest in spirit to the reference's cursor-following cover.",
+  OG: "B's dark card: dot grid, amber mark, name and role.",
+}) };
+VARIANTS.f = { name: "D + drawing cover", spec: withD({
+  Differences: "1. Amber accent from the old site's logo. 2. A construction-drawing cover of the mark, echoing the reference's engineering-drawing footer.",
+  Cover: "Static drawing of QH on its 24-unit grid with dimensions (10, 8, 14) and callouts (shared stem, 45° tail, stroke). Hover shows a measuring crosshair. Cheapest cover to build.",
+  OG: "Light card on a faint grid: amber mark, name and role.",
+}) };
 const KEYS = Object.keys(VARIANTS);
 
 function page(k) {
@@ -521,10 +560,10 @@ function mountC() {
   });
   svg.addEventListener("pointerleave", () => sc.setAttribute("opacity", 0));
 }
-const MOUNT = { a: mountA, b: mountB, c: mountC, d: mountC };
+const MOUNT = { a: mountA, b: mountB, c: mountC, d: mountC, e: mountB, f: mountA };
 
 /* ---------- variant switching (hash, since the artifact viewer drops query strings) ---------- */
-function current() { const h = location.hash.slice(1); return KEYS.includes(h) ? h : "d"; }
+function current() { const h = location.hash.slice(1); return KEYS.includes(h) ? h : "e"; }
 function render() {
   const k = current();
   document.getElementById("app").innerHTML = page(k);
