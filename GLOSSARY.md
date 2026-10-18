@@ -39,3 +39,11 @@ _Avoid_: education entry, role
 **Certification**:
 A course or credential from a training provider, listed in the Certifications section. Distinct from a Qualification.
 _Avoid_: certificate, course, award
+
+**Publication**:
+A research output Qiuyi authored that has a stable public link: a peer-reviewed paper, a preprint, or the PhD thesis.
+_Avoid_: paper (too narrow), featured publication
+
+**Project**:
+Qiuyi's own work with a public link. Work done for an Employer belongs under Experience, not here.
+_Avoid_: portfolio item, app
