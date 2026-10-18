@@ -19,3 +19,7 @@ _Avoid_: branding, theme
 **Section**:
 One titled block of the single home page, such as Experience or Publications.
 _Avoid_: page, panel
+
+**CV**:
+The downloadable PDF summary of Qiuyi's career offered on the site, with the same contact details the site shows.
+_Avoid_: resume, résumé
