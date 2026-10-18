@@ -47,3 +47,7 @@ _Avoid_: paper (too narrow), featured publication
 **Project**:
 Qiuyi's own work with a public link. Work done for an Employer belongs under Experience, not here.
 _Avoid_: portfolio item, app
+
+**CV**:
+The downloadable PDF summary of Qiuyi's career offered on the site, with the same contact details the site shows.
+_Avoid_: resume, résumé
