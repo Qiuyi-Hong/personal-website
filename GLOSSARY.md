@@ -19,3 +19,11 @@ _Avoid_: branding, theme
 **Section**:
 One titled block of the single home page, such as Experience or Publications.
 _Avoid_: page, panel
+
+**Publication**:
+A research output Qiuyi authored that has a stable public link: a peer-reviewed paper, a preprint, or the PhD thesis.
+_Avoid_: paper (too narrow), featured publication
+
+**Project**:
+Qiuyi's own work with a public link. Work done for an employer belongs under Experience, not here.
+_Avoid_: portfolio item, app
