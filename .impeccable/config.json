@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "prototypes/headline-copy.html"
+        ],
+        "createdAt": "2026-10-18T16:06:28.895Z",
+        "reason": "Claude: flagged #a1a1aa is the dark-theme --muted token paired with the light-theme #ffffff bg (never co-rendered); light --muted is #5f5f68 (6.4:1)"
+      }
+    ]
+  }
+}
