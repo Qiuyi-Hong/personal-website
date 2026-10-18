@@ -12,6 +12,10 @@ _Avoid_: template, upstream, the fork
 The current www.qiuyihong.com, built from the `personal-portfolio-website` repo, which the new site replaces.
 _Avoid_: v1, legacy site
 
+**Cutover**:
+The one-time switch of `www.qiuyihong.com` and `qiuyihong.com` from the old site to the new one. It happens once the new site has every v1 section and Qiuyi has signed it off.
+_Avoid_: launch, go-live, migration
+
 **Identity**:
 Everything that marks the site as Qiuyi's rather than the reference site's author's: name, wordmark, avatar, cover, favicon, OG images.
 _Avoid_: branding, theme
