@@ -12,6 +12,10 @@ _Avoid_: template, upstream, the fork
 The current www.qiuyihong.com, built from the `personal-portfolio-website` repo, which the new site replaces.
 _Avoid_: v1, legacy site
 
+**Cutover**:
+The one-time switch of `www.qiuyihong.com` and `qiuyihong.com` from the old site to the new one. It happens once the new site has every v1 section and Qiuyi has signed it off.
+_Avoid_: launch, go-live, migration
+
 **Identity**:
 Everything that marks the site as Qiuyi's rather than the reference site's author's: name, wordmark, avatar, cover, favicon, OG images.
 _Avoid_: branding, theme
@@ -19,6 +23,30 @@ _Avoid_: branding, theme
 **Section**:
 One titled block of the single home page, such as Experience or Publications.
 _Avoid_: page, panel
+
+**Employer**:
+An organisation listed in the Experience section, holding one or more Positions.
+_Avoid_: company, entry
+
+**Position**:
+One title held over one date range at an Employer. An Employer with several Positions lists them newest first.
+_Avoid_: role, job
+
+**Qualification**:
+One degree listed in the Education section. A degree is never also a Position, even when it was paid research.
+_Avoid_: education entry, role
+
+**Certification**:
+A course or credential from a training provider, listed in the Certifications section. Distinct from a Qualification.
+_Avoid_: certificate, course, award
+
+**Publication**:
+A research output Qiuyi authored that has a stable public link: a peer-reviewed paper, a preprint, or the PhD thesis.
+_Avoid_: paper (too narrow), featured publication
+
+**Project**:
+Qiuyi's own work with a public link. Work done for an Employer belongs under Experience, not here.
+_Avoid_: portfolio item, app
 
 **CV**:
 The downloadable PDF summary of Qiuyi's career offered on the site, with the same contact details the site shows.
