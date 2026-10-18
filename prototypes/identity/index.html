@@ -1,0 +1,533 @@
+<meta charset="utf-8">
+<title>Qiuyi Identity Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!--
+  PROTOTYPE — throwaway. Answers "Identity and distinguishing touches" (personal-website#3).
+  Three identity variants on the one-page profile, switchable via #a / #b / #c and the floating bar (← → keys).
+  Layout, tokens, screen lines and stripe dividers mimic ncdai/chanhdai.com@1951e21. Only the identity layer varies.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+/* Layout: chanhdai.com's 48rem column with border-x and full-bleed screen lines; identity layer swapped per variant. */
+:root {
+  /* reference tokens (zinc) */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --border: oklch(0.92 0.004 286.32);
+  --line: color-mix(in oklab, var(--border) 64%, var(--background));
+  /* variant accents: A none, B amber from the old site's logo, C ink blue */
+  --amber: oklch(0.7 0.15 65);
+  --ink: oklch(0.5 0.17 258);
+  --chrome-bg: oklch(0.21 0.006 285.885);
+  --chrome-fg: oklch(0.985 0 0);
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, Menlo, monospace;
+  --font-serif: "IBM Plex Serif", Georgia, serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: oklch(0.141 0.005 285.823);
+    --foreground: oklch(0.985 0 0);
+    --muted: oklch(0.274 0.006 286.033);
+    --muted-foreground: oklch(0.705 0.015 286.067);
+    --border: oklch(0.274 0.006 286.033);
+    --amber: oklch(0.82 0.14 78);
+    --ink: oklch(0.74 0.12 250);
+    --chrome-bg: oklch(0.985 0 0);
+    --chrome-fg: oklch(0.141 0.005 285.823);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.985 0 0);
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --border: oklch(0.274 0.006 286.033);
+  --amber: oklch(0.82 0.14 78);
+  --ink: oklch(0.74 0.12 250);
+  --chrome-bg: oklch(0.985 0 0);
+  --chrome-fg: oklch(0.141 0.005 285.823);
+  color-scheme: dark;
+}
+.v-a { --brand: var(--foreground); --display: var(--font-serif); --display-weight: 500; }
+.v-b { --brand: var(--amber); --display: var(--font-sans); --display-weight: 500; }
+.v-c { --brand: var(--ink); --display: var(--font-sans); --display-weight: 500; }
+
+* { box-sizing: border-box; }
+body {
+  background: var(--background); color: var(--foreground);
+  font-family: var(--font-sans); font-size: 15px; line-height: 1.5;
+  overflow-x: clip;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 120px;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--brand, var(--foreground)); outline-offset: 2px; }
+.wrap { max-width: 48rem; margin-inline: auto; }
+.bx { border-inline: 1px solid var(--line); }
+.sl { position: relative; }
+.sl::before, .sl::after { content: ""; position: absolute; left: -100vw; width: 200vw; height: 1px; background: var(--line); pointer-events: none; }
+.sl::before { top: 0; } .sl::after { bottom: 0; }
+.stripes { position: relative; height: 32px; }
+.stripes::before {
+  content: ""; position: absolute; inset: 0 auto 0 -100vw; width: 200vw; pointer-events: none;
+  --pat: color-mix(in oklab, var(--line) 56%, transparent);
+  background: repeating-linear-gradient(315deg, var(--pat) 0, var(--pat) 1px, transparent 0, transparent 50%);
+  background-size: 10px 10px;
+}
+.v-c .stripes::before { --pat: color-mix(in oklab, var(--line) 56%, transparent); }
+.mono { font-family: var(--font-mono); }
+.muted { color: var(--muted-foreground); }
+
+/* header */
+.site-header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--background); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--background); }
+.site-header .bar { display: flex; align-items: center; justify-content: space-between; height: 48px; padding-inline: 8px; }
+.mark-link { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; height: 32px; padding-inline: 4px; border-radius: 6px; }
+.mark-link svg { height: 26px; width: auto; }
+.icon-btn { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; border: 0; background: none; color: var(--foreground); cursor: pointer; }
+.icon-btn:hover { background: var(--muted); }
+.icon-btn svg { width: 18px; height: 18px; }
+
+/* profile header */
+.profile { display: grid; grid-template-columns: auto 1fr; grid-template-rows: 1fr auto; }
+.cover { grid-column: 1 / span 2; position: relative; padding: 8px; margin: 0; }
+.cover-box { aspect-ratio: 2 / 1; width: 100%; max-width: 100%; position: relative; }
+.cover-box > svg, .cover-box > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cover figcaption { position: absolute; right: 8px; bottom: 8px; font-size: 12px; letter-spacing: .02em; color: color-mix(in oklab, var(--muted-foreground) 60%, var(--background)); pointer-events: none; font-variant-numeric: tabular-nums; }
+.avatar-col { display: flex; flex-direction: column; }
+.avatar-cell { margin-top: auto; border-right: 1px solid var(--line); }
+.avatar { margin: 3px 2px; width: 120px; height: 120px; border-radius: 50%; position: relative; }
+.avatar img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; display: block; }
+.avatar::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--foreground) 22%, transparent); }
+.v-b .avatar img { filter: grayscale(1) contrast(1.05); }
+.v-b .avatar::after { box-shadow: inset 0 0 0 2px var(--amber); }
+.name-col { display: flex; flex-direction: column; min-width: 0; }
+.name-block { margin-top: auto; border-top: 1px solid var(--line); }
+.name-row { display: flex; align-items: center; gap: 8px; padding-left: 16px; min-height: 44px; }
+.name-row h1 { margin: 0; font-family: var(--display); font-weight: var(--display-weight); font-size: 2rem; line-height: 1; letter-spacing: -0.025em; }
+.v-a .name-row h1 { letter-spacing: -0.01em; }
+.verified { width: 18px; height: 18px; color: var(--brand); flex: none; }
+.tagline { border-top: 1px solid var(--line); padding: 6px 16px; font-family: var(--font-mono); font-size: 13px; color: var(--muted-foreground); min-height: 36px; text-wrap: balance; }
+@media (min-width: 640px) {
+  .cover { grid-column: 2; grid-row: 1; padding: 16px; }
+  .cover figcaption { right: 16px; bottom: 16px; }
+  .avatar-col { grid-column: 1; grid-row: 1 / span 2; }
+  .avatar { width: 160px; height: 160px; }
+}
+
+/* panels */
+.panel-title { margin: 0; padding: 0 16px; font-family: var(--display); font-weight: 600; font-size: 1.875rem; line-height: 1.4; letter-spacing: -0.025em; text-wrap: balance; }
+.v-a .panel-title { font-weight: 500; letter-spacing: -0.01em; }
+.v-c .panel-title { display: flex; align-items: baseline; gap: 12px; }
+.v-c .panel-title small { font-family: var(--font-mono); font-size: 12px; font-weight: 400; letter-spacing: 0; color: var(--ink); }
+.overview { display: grid; gap: 10px; padding: 16px; }
+.ov-row { display: flex; align-items: center; gap: 12px; font-size: 14px; min-width: 0; }
+.ov-tile { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--muted); border: 1px solid var(--line); color: var(--muted-foreground); }
+.ov-tile svg { width: 15px; height: 15px; }
+.ln { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: color-mix(in oklab, var(--brand) 45%, transparent); }
+.ln:hover { text-decoration-color: var(--brand); }
+.pub { padding: 12px 16px; border-top: 1px solid var(--line); display: grid; gap: 4px; }
+.pub:first-child { border-top: 0; }
+.pub-title { font-weight: 500; font-size: 15px; text-wrap: pretty; }
+.pub-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--muted-foreground); }
+.tag { border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; color: var(--brand); background: color-mix(in oklab, var(--brand) 7%, transparent); }
+
+/* footer */
+.foot { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
+.foot > div { padding: 10px 16px; border-left: 1px solid var(--line); font-size: 13px; min-width: 0; }
+.foot > div:first-child { border-left: 0; }
+.foot dt { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted-foreground); }
+.foot dd { margin: 2px 0 0; text-wrap: pretty; }
+.logotype { overflow: hidden; height: clamp(72px, 18vw, 150px); display: flex; align-items: flex-end; justify-content: center; color: color-mix(in oklab, var(--foreground) 12%, var(--background)); user-select: none; }
+.logotype svg { width: 100%; height: auto; display: block; }
+
+/* identity kit (prototype chrome, not part of the design) */
+.kit { margin-top: 56px; border: 1px dashed var(--muted-foreground); border-radius: 12px; padding: 20px; display: grid; gap: 22px; }
+.kit h2 { margin: 0; font-family: var(--font-mono); font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted-foreground); }
+.kit h3 { margin: 0 0 8px; font-size: 13px; font-weight: 500; }
+.spec { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; font-size: 14px; }
+.spec dt { font-family: var(--font-mono); font-size: 12px; color: var(--muted-foreground); padding-top: 2px; }
+.spec dd { margin: 0; min-width: 0; text-wrap: pretty; }
+@media (max-width: 480px) { .spec { grid-template-columns: 1fr; } .spec dd { margin-bottom: 6px; } }
+.icons { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+.tab { display: flex; align-items: center; gap: 8px; width: 210px; max-width: 100%; height: 34px; padding: 0 10px; border-radius: 9px 9px 0 0; font: 12px/1 system-ui, sans-serif; }
+.tab.light { background: #ffffff; color: #18181b; box-shadow: 0 0 0 1px #e4e4e7; }
+.tab.dark { background: #27272a; color: #fafafa; box-shadow: 0 0 0 1px #3f3f46; }
+.tab span { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.icon-sample { display: grid; gap: 4px; justify-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--muted-foreground); }
+.og { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; max-width: 100%; }
+.og svg { display: block; width: 100%; height: auto; }
+
+/* switcher */
+.switcher {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  display: flex; align-items: center; gap: 4px; padding: 4px; border-radius: 999px;
+  background: var(--chrome-bg); color: var(--chrome-fg); box-shadow: 0 8px 30px rgb(0 0 0 / .25);
+  font-family: var(--font-mono); font-size: 13px; white-space: nowrap;
+}
+.switcher button { width: 34px; height: 34px; border-radius: 999px; border: 0; background: transparent; color: inherit; font-size: 16px; cursor: pointer; }
+.switcher button:hover { background: color-mix(in oklab, var(--chrome-fg) 14%, transparent); }
+.switcher output { padding-inline: 8px; min-width: 15ch; text-align: center; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div id="app"></div>
+<nav class="switcher" aria-label="Prototype variant switcher">
+  <button type="button" id="prev" aria-label="Previous variant">←</button>
+  <output id="vlabel"></output>
+  <button type="button" id="next" aria-label="Next variant">→</button>
+</nav>
+
+<script>
+const AVATAR = "avatar.png";
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const ICON = {
+  github: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>',
+  theme: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor"/></svg>',
+  work: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>',
+  cap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>',
+  file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 15h6M9 18h4"/></svg>',
+  verified: '<svg class="verified" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1.5l2.4 1.8 3-.2 1 2.8 2.6 1.6-.8 2.9.8 2.9-2.6 1.6-1 2.8-3-.2L12 22.5l-2.4-1.8-3 .2-1-2.8L3 16.5l.8-2.9L3 10.7l2.6-1.6 1-2.8 3 .2Z"/><path d="m8 12 3 3 5-6" fill="none" stroke="var(--background)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+
+// QH ligature on a 24-unit grid: Q's right side doubles as H's left stem.
+const QH_PATH = "M3 5H13V19H3Z M10 16L15 21 M13 12H21 M21 5V19";
+const CURVE_PATH = "M6 16C9 16 9.5 8 12 8S15 16 18 16";
+
+const MARK = {
+  a: `<svg viewBox="0 0 34 24" aria-label="Qiuyi Hong"><text x="17" y="18.5" text-anchor="middle" font-family="'IBM Plex Serif', Georgia, serif" font-style="italic" font-size="19" fill="currentColor">Qh</text></svg>`,
+  b: `<svg viewBox="0 0 24 24" aria-label="Qiuyi Hong" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="${QH_PATH}"/></svg>`,
+  c: `<svg viewBox="0 0 24 24" aria-label="Qiuyi Hong" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="6"/><path d="${CURVE_PATH}" stroke="var(--ink)"/></svg>`,
+};
+
+// Favicons render to fixed palettes (they ship as files), so literal colours are intended here.
+const FAV = {
+  a: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#18181b"/><text x="16" y="24.5" text-anchor="middle" font-family="'IBM Plex Serif', Georgia, serif" font-style="italic" font-size="24" fill="#fafafa">Q</text></svg>`,
+  b: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#18181b"/><g transform="translate(4 3.5)" fill="none" stroke="#ffbc5e" stroke-width="2.6" stroke-linecap="square"><path d="${QH_PATH}"/></g></svg>`,
+  c: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#2f5bd3"/><g transform="translate(4 5)" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><path d="${CURVE_PATH}"/><path d="M5 20H19" stroke-opacity=".55"/></g></svg>`,
+};
+
+/* ---------- Variant C figure: illustrative smart-home day ---------- */
+const g = (h, m, s, a) => a * Math.exp(-((h - m) ** 2) / (2 * s * s));
+const pv = (h) => (h < 6 || h > 20 ? 0 : 3.2 * Math.sin((Math.PI * (h - 6)) / 14));
+const hp = (h) => 0.35 + g(h, 3, 1, 1.5) + g(h, 13, 1.6, 1.9) + g(h, 18.5, 1, 0.7);
+const HOURS = Array.from({ length: 97 }, (_, i) => i / 4);
+function plotPaths(x0, x1, y0, y1, vmax) {
+  const X = (h) => x0 + (h / 24) * (x1 - x0);
+  const Y = (v) => y1 - (v / vmax) * (y1 - y0);
+  const line = (f) => HOURS.map((h, i) => `${i ? "L" : "M"}${X(h).toFixed(1)} ${Y(f(h)).toFixed(1)}`).join("");
+  return { X, Y, pvLine: line(pv), pvArea: `${line(pv)}L${X(24)} ${Y(0)}L${X(0)} ${Y(0)}Z`, hpLine: line(hp) };
+}
+const hhmm = (h) => `${String(Math.floor(h)).padStart(2, "0")}:${String(Math.round((h % 1) * 60)).padStart(2, "0")}`;
+
+/* ---------- covers ---------- */
+const COVER = {
+  a: () => {
+    // IBM Plex Serif metrics: cap 698, x-height 516 per 1000 em. At 220 units on a 228 baseline.
+    const base = 228, size = 220, cap = base - 0.698 * size, xh = base - 0.516 * size, desc = base + 0.2 * size;
+    const guide = (y, label) => `<line x1="0" x2="600" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="1"/><text x="6" y="${y - 5}" class="mono" font-size="10" fill="var(--muted-foreground)">${label}</text>`;
+    return `<svg viewBox="0 0 600 300" id="specimen" role="img" aria-label="Type specimen of the letters Q and h in IBM Plex Serif Italic">
+      ${guide(cap, "cap height 698")}${guide(xh, "x-height 516")}${guide(base, "baseline 0")}${guide(desc, "descender")}
+      <text x="300" y="${base}" text-anchor="middle" font-family="'IBM Plex Serif', Georgia, serif" font-style="italic" font-size="${size}" fill="var(--foreground)">Qh</text>
+      <text x="594" y="16" text-anchor="end" class="mono" font-size="10" fill="var(--muted-foreground)">IBM Plex Serif Italic 400 · 220 pt</text>
+      <g id="xh" opacity="0"><line id="xh-v" y1="0" y2="300" stroke="var(--muted-foreground)" stroke-dasharray="3 3"/><line id="xh-h" x1="0" x2="600" stroke="var(--muted-foreground)" stroke-dasharray="3 3"/><text id="xh-t" class="mono" font-size="10" fill="var(--muted-foreground)"></text></g>
+    </svg>`;
+  },
+  b: () => `<canvas id="grid" aria-label="Dot grid that draws the QH mark and swells around your cursor" role="img"></canvas>`,
+  c: () => {
+    const p = plotPaths(40, 584, 28, 256, 4);
+    const yt = [0, 1, 2, 3, 4].map((v) => `<line x1="40" x2="584" y1="${p.Y(v)}" y2="${p.Y(v)}" stroke="var(--line)"/><text x="34" y="${p.Y(v) + 3.5}" text-anchor="end" class="mono" font-size="10" fill="var(--muted-foreground)">${v}</text>`).join("");
+    const xt = [0, 6, 12, 18, 24].map((h) => `<text x="${p.X(h)}" y="274" text-anchor="middle" class="mono" font-size="10" fill="var(--muted-foreground)">${hhmm(h % 24 === 0 && h ? 0 : h)}</text>`).join("");
+    return `<svg viewBox="0 0 600 290" id="fig" role="img" aria-label="Illustrative chart of one day in a smart home: solar output and heat pump load in kilowatts">
+      <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line y2="6" stroke="var(--muted-foreground)" stroke-opacity=".35"/></pattern></defs>
+      <rect x="${p.X(0.5)}" y="28" width="${p.X(4.5) - p.X(0.5)}" height="228" fill="url(#hatch)"/>
+      ${yt}${xt}
+      <text x="12" y="20" class="mono" font-size="10" fill="var(--muted-foreground)">kW</text>
+      <path d="${p.pvArea}" fill="var(--ink)" fill-opacity=".14"/><path d="${p.pvLine}" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+      <path d="${p.hpLine}" fill="none" stroke="var(--foreground)" stroke-width="1.75"/>
+      <g class="mono" font-size="10" fill="var(--muted-foreground)">
+        <rect x="320" y="10" width="10" height="8" fill="var(--ink)" fill-opacity=".35"/><text x="334" y="17.5">Solar PV</text>
+        <line x1="396" x2="408" y1="14" y2="14" stroke="var(--foreground)" stroke-width="1.75"/><text x="412" y="17.5">Heat pump</text>
+        <rect x="478" y="10" width="10" height="8" fill="url(#hatch)" stroke="var(--line)"/><text x="492" y="17.5">Off-peak</text>
+      </g>
+      <g id="scrub" opacity="0"><line id="sc-l" y1="28" y2="256" stroke="var(--muted-foreground)" stroke-dasharray="3 3"/><circle id="sc-p" r="3" fill="var(--ink)"/><circle id="sc-h" r="3" fill="var(--foreground)"/><text id="sc-t" y="44" class="mono" font-size="10" fill="var(--foreground)"></text></g>
+    </svg>`;
+  },
+};
+
+const CAPTION = {
+  a: "Specimen 1.",
+  b: "Grid 12 px.",
+  c: "Fig. 1. One day, heat pump shifted to solar and off-peak hours. Illustrative.",
+};
+
+const LOGOTYPE = {
+  a: `<svg viewBox="0 0 760 150" aria-hidden="true"><text x="380" y="138" text-anchor="middle" font-family="'IBM Plex Serif', Georgia, serif" font-style="italic" font-size="170" fill="currentColor">Qiuyi Hong</text></svg>`,
+  b: `<svg viewBox="0 0 760 150" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"><g transform="translate(40 8) scale(6.4)"><path d="${QH_PATH}"/></g><text x="240" y="130" font-family="'Geist Mono', monospace" font-size="86" letter-spacing="10" fill="currentColor" stroke="none">QIUYI</text></svg>`,
+  c: (() => { const p = plotPaths(0, 760, 10, 150, 3.3); return `<svg viewBox="0 0 760 150" aria-hidden="true"><path d="${p.pvArea}" fill="currentColor" fill-opacity=".6"/><path d="${p.hpLine}" fill="none" stroke="currentColor" stroke-width="3"/></svg>`; })(),
+};
+
+/* ---------- OG cards (1200×630, fixed light or dark palette as shipped) ---------- */
+const OG = {
+  a: () => `<svg viewBox="0 0 1200 630" role="img" aria-label="Open Graph card, Specimen variant">
+    <defs><clipPath id="oga"><circle cx="900" cy="300" r="140"/></clipPath><pattern id="stra" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><line y2="14" stroke="#e4e4e7"/></pattern></defs>
+    <rect width="1200" height="630" fill="#ffffff"/>
+    <rect y="540" width="1200" height="90" fill="url(#stra)"/>
+    <path d="M100 0V630M1100 0V630M0 80H1200M0 540H1200" stroke="#e4e4e7" stroke-width="2"/>
+    <text x="150" y="300" font-family="'IBM Plex Serif', Georgia, serif" font-weight="500" font-size="104" fill="#18181b">Qiuyi Hong</text>
+    <text x="154" y="372" font-family="Geist, sans-serif" font-size="36" fill="#71717a">Junior AI Engineer · London</text>
+    <image href="${AVATAR}" x="760" y="160" width="280" height="280" clip-path="url(#oga)" preserveAspectRatio="xMidYMid slice"/>
+    <circle cx="900" cy="300" r="140" fill="none" stroke="#e4e4e7" stroke-width="2"/>
+    <text x="154" y="500" font-family="'Geist Mono', monospace" font-size="28" fill="#71717a">qiuyihong.com</text>
+  </svg>`,
+  b: () => `<svg viewBox="0 0 1200 630" role="img" aria-label="Open Graph card, Gridmark variant">
+    <defs><pattern id="dotb" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="12" cy="12" r="1.6" fill="#3f3f46"/></pattern></defs>
+    <rect width="1200" height="630" fill="#09090b"/><rect width="1200" height="630" fill="url(#dotb)"/>
+    <g transform="translate(96 150) scale(13)" fill="none" stroke="#ffbc5e" stroke-width="1.6" stroke-linecap="square"><path d="${QH_PATH}"/></g>
+    <text x="520" y="300" font-family="Geist, sans-serif" font-weight="500" font-size="88" fill="#fafafa">Qiuyi Hong</text>
+    <text x="524" y="362" font-family="'Geist Mono', monospace" font-size="30" fill="#ffbc5e">Junior AI Engineer</text>
+    <text x="524" y="404" font-family="'Geist Mono', monospace" font-size="30" fill="#a1a1aa">London · PhD, energy systems</text>
+    <text x="524" y="520" font-family="'Geist Mono', monospace" font-size="26" fill="#71717a">qiuyihong.com</text>
+  </svg>`,
+  c: () => {
+    const p = plotPaths(0, 1200, 360, 630, 3.6);
+    return `<svg viewBox="0 0 1200 630" role="img" aria-label="Open Graph card, Fig. 1 variant">
+    <rect width="1200" height="630" fill="#ffffff"/>
+    <path d="${p.pvArea}" fill="#2f5bd3" fill-opacity=".14"/><path d="${p.pvLine}" fill="none" stroke="#2f5bd3" stroke-width="3"/>
+    <path d="${p.hpLine}" fill="none" stroke="#18181b" stroke-width="3.5"/>
+    <g transform="translate(1040 64) scale(4)" fill="none" stroke="#18181b" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="6"/><path d="${CURVE_PATH}" stroke="#2f5bd3"/></g>
+    <text x="80" y="170" font-family="Geist, sans-serif" font-weight="600" font-size="92" letter-spacing="-2" fill="#18181b">Qiuyi Hong</text>
+    <text x="84" y="236" font-family="Geist, sans-serif" font-size="36" fill="#71717a">Junior AI Engineer · PhD in smart energy systems</text>
+    <text x="84" y="300" font-family="'Geist Mono', monospace" font-size="24" fill="#2f5bd3">Fig. 1 · qiuyihong.com</text>
+  </svg>`;
+  },
+};
+
+const CREDIT = {
+  a: `Design based on <a class="ln" href="https://chanhdai.com" target="_blank" rel="noopener">chanhdai.com</a> by Chánh Đại. Code under the <a class="ln" href="https://github.com/ncdai/chanhdai.com/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>.`,
+  b: `Built on the <a class="ln" href="https://chanhdai.com" target="_blank" rel="noopener">chanhdai.com</a> design system (<a class="ln" href="https://github.com/ncdai/chanhdai.com/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a>). Identity by Qiuyi Hong.`,
+  c: `Design based on <a class="ln" href="https://chanhdai.com" target="_blank" rel="noopener">chanhdai.com</a> · <a class="ln" href="https://github.com/ncdai/chanhdai.com/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>`,
+};
+
+const VARIANTS = {
+  a: {
+    name: "Specimen",
+    spec: [
+      ["Mark", "Serif italic “Qh” set in IBM Plex Serif. The favicon is a single italic Q."],
+      ["Differences", "1. Name and section headings in IBM Plex Serif, where the reference uses Geist. 2. No accent colour: identity comes from type alone."],
+      ["Cover", "A type specimen of the mark with real Plex metrics (cap height, x-height, baseline). Hover shows a measuring crosshair."],
+      ["Avatar", "The existing photo in colour, same in both themes."],
+      ["Footer", "“Qiuyi Hong” logotype in serif italic; credit names Chánh Đại and the MIT License."],
+      ["OG", "Light card: serif name, role, photo, the grid lines and stripes of the site."],
+    ],
+  },
+  b: {
+    name: "Gridmark",
+    spec: [
+      ["Mark", "Geometric QH ligature drawn on a 24-unit grid: the Q's right side is the H's left stem."],
+      ["Differences", "1. Amber accent, carried over from the old site's logo (#FFDB6E → #FFBC5E). 2. Monochrome avatar with an amber ring."],
+      ["Cover", "Canvas dot grid that draws the mark in amber. Dots swell near the cursor; a click sends a ripple. Keeps the reference's ‘follows your cursor’ idea in a different form."],
+      ["Avatar", "The existing photo in greyscale, amber ring."],
+      ["Footer", "QH mark plus “QIUYI” in Geist Mono; credit says “Built on the chanhdai.com design system (MIT). Identity by Qiuyi Hong.”"],
+      ["OG", "Dark card with a dot grid, amber mark, name and role in mono."],
+    ],
+  },
+  c: {
+    name: "Fig. 1",
+    spec: [
+      ["Mark", "Rounded square holding a daylight curve (the solar output shape). The favicon is white on blue."],
+      ["Differences", "1. Ink-blue accent. 2. The cover is a real figure from Qiuyi's field: an optimised smart-home day (heat pump vs solar vs off-peak tariff), with a hover scrubber. Data are illustrative."],
+      ["Cover", "Fig. 1 chart in the site's own tokens. Section headings carry a small mono count."],
+      ["Avatar", "The existing photo in colour."],
+      ["Footer", "The day's curves as the logotype band; credit uses the map's wording “Design based on chanhdai.com · MIT License”."],
+      ["OG", "White card, name and role on top, the Fig. 1 curves full-bleed below."],
+    ],
+  },
+};
+const KEYS = Object.keys(VARIANTS);
+
+function page(k) {
+  const count = (n) => (k === "c" ? `<small>${n}</small>` : "");
+  return `
+  <div class="v-${k}">
+    <header class="site-header"><div class="wrap bx sl bar-wrap"><div class="bar">
+      <a class="mark-link" href="#${k}" aria-label="Home">${MARK[k]}</a>
+      <div style="display:flex;gap:2px">
+        <a class="icon-btn" href="https://github.com/Qiuyi-Hong" target="_blank" rel="noopener" aria-label="GitHub">${ICON.github}</a>
+        <button class="icon-btn" type="button" id="theme" aria-label="Toggle theme">${ICON.theme}</button>
+      </div>
+    </div></div></header>
+
+    <main class="wrap">
+      <section class="profile bx sl">
+        <figure class="cover"><div class="cover-box">${COVER[k]()}</div><figcaption class="mono">${CAPTION[k]}</figcaption></figure>
+        <div class="avatar-col"><div class="avatar-cell sl"><div class="avatar"><img src="${AVATAR}" alt="Qiuyi Hong"></div></div></div>
+        <div class="name-col"><div class="name-block">
+          <div class="name-row"><h1>Qiuyi Hong</h1>${ICON.verified}</div>
+          <div class="tagline">Junior AI Engineer at Hyperlayer</div>
+        </div></div>
+      </section>
+
+      <div class="stripes bx"></div>
+
+      <section class="bx sl">
+        <h2 class="panel-title sl">Overview</h2>
+        <div class="overview">
+          <div class="ov-row"><span class="ov-tile">${ICON.work}</span><span>Junior AI Engineer @ <span class="ln">Hyperlayer</span></span></div>
+          <div class="ov-row"><span class="ov-tile">${ICON.cap}</span><span>PhD, University of Essex</span></div>
+          <div class="ov-row"><span class="ov-tile">${ICON.pin}</span><span>London, United Kingdom</span></div>
+          <div class="ov-row"><span class="ov-tile">${ICON.mail}</span><span class="ln">hello@qiuyihong.com</span></div>
+          <div class="ov-row"><span class="ov-tile">${ICON.file}</span><span class="ln">CV (PDF)</span></div>
+        </div>
+      </section>
+
+      <div class="stripes bx"></div>
+
+      <section class="bx sl">
+        <h2 class="panel-title sl">Publications ${count("7")}</h2>
+        <div>
+          <div class="pub"><div class="pub-title">A Review of UK and International Business Models for Rooftop Solar PV Systems to Optimise Solar Energy Adoption</div><div class="pub-meta"><span class="tag">Conference</span><span>CIRED</span><span>Dec 2025</span></div></div>
+          <div class="pub"><div class="pub-title">Optimal Operation of Air-Source Heat Pump-based Heating Systems for Dwellings: A Thermal Network Approach</div><div class="pub-meta"><span class="tag">Conference</span><span>IEEE PES ISGT Europe</span><span>Oct 2025</span></div></div>
+        </div>
+      </section>
+
+      <div class="stripes bx"></div>
+
+      <footer class="bx sl">
+        <dl class="foot" style="margin:0">
+          <div><dt>Site</dt><dd>qiuyihong.com</dd></div>
+          <div><dt>Credit</dt><dd>${CREDIT[k]}</dd></div>
+          <div><dt>Build</dt><dd class="mono">964f75e</dd></div>
+        </dl>
+        <div class="logotype sl">${LOGOTYPE[k]}</div>
+      </footer>
+
+      <section class="kit" aria-label="Identity kit">
+        <h2>Prototype · identity kit · ${k.toUpperCase()} ${VARIANTS[k].name}</h2>
+        <dl class="spec">${VARIANTS[k].spec.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("")}</dl>
+        <div><h3>Favicon and app icons</h3>
+          <div class="icons">
+            <div class="tab light">${FAV[k](16)}<span>Qiuyi Hong</span>×</div>
+            <div class="tab dark">${FAV[k](16)}<span>Qiuyi Hong</span>×</div>
+            <div class="icon-sample">${FAV[k](32)}32</div>
+            <div class="icon-sample">${FAV[k](64)}64</div>
+            <div class="icon-sample"><span style="display:block;border-radius:22%;overflow:hidden;width:90px;height:90px">${FAV[k](90).replace('rx="7"', 'rx="0"')}</span>apple 180</div>
+          </div>
+        </div>
+        <div><h3>Default OG image (1200 × 630)</h3><div class="og">${OG[k]()}</div></div>
+      </section>
+    </main>
+  </div>`;
+}
+
+/* ---------- interactions ---------- */
+function svgPoint(svg, e) {
+  const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function mountA() {
+  const svg = document.getElementById("specimen"), xh = document.getElementById("xh");
+  svg.addEventListener("pointermove", (e) => {
+    const p = svgPoint(svg, e);
+    xh.setAttribute("opacity", 1);
+    document.getElementById("xh-v").setAttribute("x1", p.x); document.getElementById("xh-v").setAttribute("x2", p.x);
+    document.getElementById("xh-h").setAttribute("y1", p.y); document.getElementById("xh-h").setAttribute("y2", p.y);
+    const t = document.getElementById("xh-t");
+    t.setAttribute("x", Math.min(p.x + 6, 520)); t.setAttribute("y", Math.max(p.y - 6, 12));
+    t.textContent = `x ${Math.round(p.x)}  y ${Math.round(p.y)}`;
+  });
+  svg.addEventListener("pointerleave", () => xh.setAttribute("opacity", 0));
+}
+function mountB() {
+  const cv = document.getElementById("grid"), ctx = cv.getContext("2d");
+  const mark = new Path2D(QH_PATH);
+  let mouse = null, ripple = null, W = 0, H = 0, dots = [];
+  function layout() {
+    const r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+    W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const scale = (H * 0.8) / 24, ox = (W - 24 * scale) / 2, oy = H * 0.08;
+    ctx.save(); ctx.translate(ox, oy); ctx.scale(scale, scale); ctx.lineWidth = 2.2; ctx.lineCap = "square";
+    dots = [];
+    // isPointInStroke applies the current transform to the path; the point stays in device pixels.
+    for (let y = 6; y < H; y += 12) for (let x = 6; x < W; x += 12) dots.push({ x, y, on: ctx.isPointInStroke(mark, x * dpr, y * dpr) });
+    ctx.restore(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function draw(now) {
+    if (!cv.isConnected) return;
+    const cs = getComputedStyle(cv), off = cs.getPropertyValue("--line"), on = cs.getPropertyValue("--amber");
+    ctx.clearRect(0, 0, W, H);
+    for (const d of dots) {
+      let r = d.on ? 2.4 : 1.1;
+      if (mouse) r += Math.max(0, 1 - Math.hypot(d.x - mouse.x, d.y - mouse.y) / 70) * 2.2;
+      if (ripple) { const rad = (now - ripple.t) * 0.35, dd = Math.abs(Math.hypot(d.x - ripple.x, d.y - ripple.y) - rad); if (dd < 14) r += (1 - dd / 14) * 2; }
+      ctx.fillStyle = d.on ? on : off;
+      ctx.beginPath(); ctx.arc(d.x, d.y, r, 0, Math.PI * 2); ctx.fill();
+    }
+    if (ripple && now - ripple.t > 1400) ripple = null;
+    if (ripple) requestAnimationFrame(draw);
+  }
+  const redraw = () => requestAnimationFrame(draw);
+  layout(); redraw();
+  new ResizeObserver(() => { if (cv.isConnected) { layout(); redraw(); } }).observe(cv);
+  cv.addEventListener("pointermove", (e) => { const r = cv.getBoundingClientRect(); mouse = { x: e.clientX - r.left, y: e.clientY - r.top }; redraw(); });
+  cv.addEventListener("pointerleave", () => { mouse = null; redraw(); });
+  cv.addEventListener("click", (e) => { if (reduceMotion) return; const r = cv.getBoundingClientRect(); ripple = { x: e.clientX - r.left, y: e.clientY - r.top, t: performance.now() }; redraw(); });
+  addEventListener("themechange", redraw);
+}
+function mountC() {
+  const svg = document.getElementById("fig"), p = plotPaths(40, 584, 28, 256, 4), sc = document.getElementById("scrub");
+  svg.addEventListener("pointermove", (e) => {
+    const pt = svgPoint(svg, e);
+    const h = Math.round(Math.min(24, Math.max(0, ((pt.x - 40) / 544) * 24)) * 4) / 4;
+    const x = p.X(h);
+    sc.setAttribute("opacity", 1);
+    const l = document.getElementById("sc-l"); l.setAttribute("x1", x); l.setAttribute("x2", x);
+    document.getElementById("sc-p").setAttribute("cx", x); document.getElementById("sc-p").setAttribute("cy", p.Y(pv(h)));
+    document.getElementById("sc-h").setAttribute("cx", x); document.getElementById("sc-h").setAttribute("cy", p.Y(hp(h)));
+    const t = document.getElementById("sc-t");
+    t.textContent = `${hhmm(h % 24)}  PV ${pv(h).toFixed(1)} kW  HP ${hp(h).toFixed(1)} kW`;
+    const right = x > 380; t.setAttribute("x", right ? x - 8 : x + 8); t.setAttribute("text-anchor", right ? "end" : "start");
+  });
+  svg.addEventListener("pointerleave", () => sc.setAttribute("opacity", 0));
+}
+const MOUNT = { a: mountA, b: mountB, c: mountC };
+
+/* ---------- variant switching (hash, since the artifact viewer drops query strings) ---------- */
+function current() { const h = location.hash.slice(1); return KEYS.includes(h) ? h : "a"; }
+function render() {
+  const k = current();
+  document.getElementById("app").innerHTML = page(k);
+  document.getElementById("vlabel").value = `${k.toUpperCase()} · ${VARIANTS[k].name}`;
+  document.getElementById("theme").addEventListener("click", () => {
+    const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.dataset.theme = dark ? "light" : "dark";
+    dispatchEvent(new Event("themechange"));
+  });
+  MOUNT[k]();
+}
+function go(step) {
+  const i = (KEYS.indexOf(current()) + step + KEYS.length) % KEYS.length;
+  history.replaceState(null, "", "#" + KEYS[i]); render();
+}
+document.getElementById("prev").onclick = () => go(-1);
+document.getElementById("next").onclick = () => go(1);
+addEventListener("keydown", (e) => {
+  if (e.target.closest?.("input, textarea, [contenteditable]")) return;
+  if (e.key === "ArrowLeft") go(-1);
+  if (e.key === "ArrowRight") go(1);
+});
+addEventListener("hashchange", render);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => dispatchEvent(new Event("themechange")));
+render();
+</script>
